@@ -84,6 +84,7 @@ pipeline {
     post {
         always {
             script {
+                // Define the method inside the script block
                 def sendEmail(String subjectPrefix) {
                     def emailTemplate = load 'emailTemplate.groovy'
                     def changes = env.CHANGES ?: "No changes detected"
@@ -101,6 +102,7 @@ pipeline {
                              subject: "${subjectPrefix} in Jenkins: ${env.PROJECT_NAME} - #${env.BUILD_NUMBER}"
                 }
 
+                // Call the method based on build result
                 if (currentBuild.result == 'FAILURE') {
                     sendEmail('Build failed')
                 } else if (currentBuild.result == 'UNSTABLE') {
