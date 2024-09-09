@@ -1,5 +1,5 @@
-def getEmailBody(buildUrl, projectName, buildNumber, changes, buildLog) {
-    return """
+def sendEmail(subjectPrefix, buildUrl, projectName, buildNumber, changes, buildLog, recipient) {
+    def emailBody = """
         <html>
             <body>
                 <h2>Jenkins Build Report</h2>
@@ -12,4 +12,11 @@ def getEmailBody(buildUrl, projectName, buildNumber, changes, buildLog) {
             </body>
         </html>
     """
+    
+    emailext(
+        body: emailBody,
+        mimeType: 'text/html',
+        to: recipient,
+        subject: "${subjectPrefix} ${projectName} - #${buildNumber}"
+    )
 }
