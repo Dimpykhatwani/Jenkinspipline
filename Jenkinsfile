@@ -1,5 +1,8 @@
 pipeline {
-    agent any
+    agent {
+        label 'docker_agent'
+    }
+
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '',  daysToKeepStr: '', numToKeepStr: '10' )
     }
@@ -18,25 +21,25 @@ pipeline {
             stages {
                 stage('Image Build') {
                     steps {
-                        sh 'sudo docker build . -t /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
+                        sh 'docker build . -t registry.toshalinfotech.com/test/lub/test:0.$BUILD_NUMBER'
                     }
                 }
 
                 stage('Push to Registry') {
                     steps {
-                        sh 'sudo docker push /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
+                        sh 'docker push registry.toshalinfotech.com/test/lub/test:0.$BUILD_NUMBER'
                     }
                 }
 
                 stage('Override Env Variable') {
                     steps {
-                        sh 'sudo echo test=/dimpy24/jenkinspipline:0.$BUILD_NUMBER > .env'
+                        sh 'echo test=registry.toshalinfotech.com/test/lub/test:0.$BUILD_NUMBER > .env'
                     }
                 }
 
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'sudo docker compose --env-file .env up -d'
+                        sh 'docker compose --env-file .env up -d'
                     }
                 }
             }
@@ -75,52 +78,72 @@ pipeline {
     }
 
     environment {
-        EMAIL_TO = 'khatwanidimpy@gmail.com'
+        EMAIL_TO = 'dimpy.khatwani@toshalinfotech.com'
     }
 
     post {
         failure {
             script {
                 def emailTemplate = load 'emailTemplate.groovy'
-                def emailBody = emailTemplate.getEmailBody(env.BUILD_URL, env.PROJECT_NAME, env.BUILD_NUMBER, env.CHANGES, currentBuild.rawBuild.getLog(100).join("\n"))
-                
+                def emailBody = emailTemplate.getEmailBody(
+                    env.BUILD_URL, 
+                    env.PROJECT_NAME, 
+                    env.BUILD_NUMBER, 
+                    env.CHANGES, 
+                    currentBuild.rawBuild.getLog(100).join("\n")
+                )
                 emailext body: emailBody, 
                          mimeType: 'text/html',
                          to: "${EMAIL_TO}", 
-                         subject: 'Build failed in Jenkins: $PROJECT_NAME - #$BUILD_NUMBER'
+                         subject: 'Build failed in Jenkins: ${env.PROJECT_NAME} - #${env.BUILD_NUMBER}'
             }
         }
         unstable {
             script {
                 def emailTemplate = load 'emailTemplate.groovy'
-                def emailBody = emailTemplate.getEmailBody(env.BUILD_URL, env.PROJECT_NAME, env.BUILD_NUMBER, env.CHANGES, currentBuild.rawBuild.getLog(100).join("\n"))
-
+                def emailBody = emailTemplate.getEmailBody(
+                    env.BUILD_URL, 
+                    env.PROJECT_NAME, 
+                    env.BUILD_NUMBER, 
+                    env.CHANGES, 
+                    currentBuild.rawBuild.getLog(100).join("\n")
+                )
                 emailext body: emailBody, 
                          mimeType: 'text/html',
                          to: "${EMAIL_TO}", 
-                         subject: 'Unstable build in Jenkins: $PROJECT_NAME - #$BUILD_NUMBER'
+                         subject: 'Unstable build in Jenkins: ${env.PROJECT_NAME} - #${env.BUILD_NUMBER}'
             }
         }
         changed {
             script {
                 def emailTemplate = load 'emailTemplate.groovy'
-                def emailBody = emailTemplate.getEmailBody(env.BUILD_URL, env.PROJECT_NAME, env.BUILD_NUMBER, env.CHANGES, currentBuild.rawBuild.getLog(100).join("\n"))
-
+                def emailBody = emailTemplate.getEmailBody(
+                    env.BUILD_URL, 
+                    env.PROJECT_NAME, 
+                    env.BUILD_NUMBER, 
+                    env.CHANGES, 
+                    currentBuild.rawBuild.getLog(100).join("\n")
+                )
                 emailext body: emailBody, 
                          mimeType: 'text/html',
                          to: "${EMAIL_TO}", 
-                         subject: 'Jenkins build is back to successful: $PROJECT_NAME - #$BUILD_NUMBER'
+                         subject: 'Jenkins build is back to successful: ${env.PROJECT_NAME} - #${env.BUILD_NUMBER}'
             }
         }
         aborted {
             script {
                 def emailTemplate = load 'emailTemplate.groovy'
-                def emailBody = emailTemplate.getEmailBody(env.BUILD_URL, env.PROJECT_NAME, env.BUILD_NUMBER, env.CHANGES, currentBuild.rawBuild.getLog(100).join("\n"))
-
+                def emailBody = emailTemplate.getEmailBody(
+                    env.BUILD_URL, 
+                    env.PROJECT_NAME, 
+                    env.BUILD_NUMBER, 
+                    env.CHANGES, 
+                    currentBuild.rawBuild.getLog(100).join("\n")
+                )
                 emailext body: emailBody, 
                          mimeType: 'text/html',
                          to: "${EMAIL_TO}", 
-                         subject: 'Build aborted in Jenkins: $PROJECT_NAME - #$BUILD_NUMBER'
+                         subject: 'Pipeline aborted: ${env.PROJECT_NAME} - #${env.BUILD_NUMBER}'
             }
         }
     }
