@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker_agent'
-    }
+    agent any
 
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '',  daysToKeepStr: '', numToKeepStr: '10' )
