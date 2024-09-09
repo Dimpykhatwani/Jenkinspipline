@@ -18,25 +18,25 @@ pipeline {
             stages {
                 stage('Image Build') {
                     steps {
-                        sh 'docker build . -t /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
+                        sh 'sudo docker build . -t /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
                     }
                 }
 
                 stage('Push to Registry') {
                     steps {
-                        sh 'docker push /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
+                        sh 'sudo docker push /dimpy24/jenkinspipline:0.$BUILD_NUMBER'
                     }
                 }
 
                 stage('Override Env Variable') {
                     steps {
-                        sh 'echo test=/dimpy24/jenkinspipline:0.$BUILD_NUMBER > .env'
+                        sh 'sudo echo test=/dimpy24/jenkinspipline:0.$BUILD_NUMBER > .env'
                     }
                 }
 
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'docker compose --env-file .env up -d'
+                        sh 'sudo docker compose --env-file .env up -d'
                     }
                 }
             }
@@ -75,7 +75,7 @@ pipeline {
     }
 
     environment {
-        EMAIL_TO = 'dimpy.khatwani@toshalinfotech.com'
+        EMAIL_TO = 'khatwanidimpy@gmail.com'
     }
 
     post {
